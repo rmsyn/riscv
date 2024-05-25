@@ -1,63 +1,17 @@
 //! `mcountinhibit` register
 
-use crate::bits::{bf_extract, bf_insert};
+use crate::read_write_csr;
 
-/// `mcountinhibit` register
-#[derive(Clone, Copy, Debug)]
-pub struct Mcountinhibit {
-    bits: usize,
-}
-
-impl Mcountinhibit {
-    /// Machine "cycle\[h\]" Disable
-    #[inline]
-    pub fn cy(&self) -> bool {
-        bf_extract(self.bits, 0, 1) != 0
-    }
-
-    /// Sets whether to inhibit the "cycle\[h\]" counter.
-    ///
-    /// Only updates the in-memory value, does not modify the `mcountinhibit` register.
-    #[inline]
-    pub fn set_cy(&mut self, cy: bool) {
-        self.bits = bf_insert(self.bits, 0, 1, cy as usize);
-    }
-
-    /// Machine "instret\[h\]" Disable
-    #[inline]
-    pub fn ir(&self) -> bool {
-        bf_extract(self.bits, 2, 1) != 0
-    }
-
-    /// Sets whether to inhibit the "instret\[h\]" counter.
-    ///
-    /// Only updates the in-memory value, does not modify the `mcountinhibit` register.
-    #[inline]
-    pub fn set_ir(&mut self, ir: bool) {
-        self.bits = bf_insert(self.bits, 2, 1, ir as usize);
-    }
-
-    /// Machine "hpm\[x\]" Disable (bits 3-31)
-    #[inline]
-    pub fn hpm(&self, index: usize) -> bool {
-        assert!((3..32).contains(&index));
-        bf_extract(self.bits, index, 1) != 0
-    }
-
-    /// Sets whether to inhibit the "hpm\[X\]" counter.
-    ///
-    /// Only updates the in-memory value, does not modify the `mcountinhibit` register.
-    #[inline]
-    pub fn set_hpm(&mut self, index: usize, hpm: bool) {
-        assert!((3..32).contains(&index));
-        self.bits = bf_insert(self.bits, index, 1, hpm as usize);
-    }
-}
-
-read_csr_as!(Mcountinhibit, 0x320);
-write_csr_as!(Mcountinhibit, 0x320);
-set!(0x320);
-clear!(0x320);
+read_write_csr!(
+    "`mcountinhibit` register",
+    Mcountinhibit,
+    0x320,
+    [
+        {cy, 0},
+        {ir, 2},
+        {hpm, 3, 31}
+    ]
+); 
 
 set_clear_csr!(
 /// Machine cycle Disable
