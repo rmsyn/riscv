@@ -1,6 +1,10 @@
 //! mcounteren register
 
 use crate::bits::{bf_extract, bf_insert};
+use crate::index::RangedIndex;
+
+/// Convenience alias to represent the valid range of HPM bitfields.
+pub type HpmIndex = RangedIndex<3, 31>;
 
 /// mcounteren register
 #[derive(Clone, Copy, Debug)]
@@ -53,18 +57,16 @@ impl Mcounteren {
 
     /// Supervisor "hpm\[x\]" Enable (bits 3-31)
     #[inline]
-    pub fn hpm(&self, index: usize) -> bool {
-        assert!((3..32).contains(&index));
-        bf_extract(self.bits, index, 1) != 0
+    pub fn hpm(&self, index: HpmIndex) -> bool {
+        bf_extract(self.bits, index.into_inner(), 1) != 0
     }
 
     /// Sets whether to enable the "hpm\[X\]" counter.
     ///
     /// Only updates the in-memory value, does not modify the `mcounteren` register.
     #[inline]
-    pub fn set_hpm(&mut self, index: usize, hpm: bool) {
-        assert!((3..32).contains(&index));
-        self.bits = bf_insert(self.bits, index, 1, hpm as usize);
+    pub fn set_hpm(&mut self, index: HpmIndex, hpm: bool) {
+        self.bits = bf_insert(self.bits, index.into_inner(), 1, hpm as usize);
     }
 }
 
@@ -130,13 +132,14 @@ mod tests {
         assert!(!m.ir());
 
         (3..32).for_each(|i| {
-            assert!(!m.hpm(i));
+            let idx = HpmIndex::from_inner(i);
+            assert!(!m.hpm(idx));
 
-            m.set_hpm(i, true);
-            assert!(m.hpm(i));
+            m.set_hpm(idx, true);
+            assert!(m.hpm(idx));
 
-            m.set_hpm(i, false);
-            assert!(!m.hpm(i));
+            m.set_hpm(idx, false);
+            assert!(!m.hpm(idx));
         });
     }
 }

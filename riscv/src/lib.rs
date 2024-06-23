@@ -38,6 +38,8 @@
 pub mod asm;
 pub(crate) mod bits;
 pub mod delay;
+pub mod error;
+pub(crate) mod index;
 pub mod interrupt;
 pub mod register;
 
