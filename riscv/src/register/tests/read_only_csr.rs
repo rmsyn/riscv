@@ -4,48 +4,36 @@ read_only_csr! {
     /// test CSR register type
     Mtest: 0x000,
     mask: 0b1111_1111_1111,
-    field: {
-        /// test single-bit field
-        single,
-        /// try-getter test single-bit field
-        try_single,
-        bit: 0,
-    }
+    /// test single-bit field
+    single: 0,
 }
 
 read_only_csr_field! {
     Mtest,
     /// multiple single-bit field range
-    multi_range,
-    /// try-getter multiple single-bit field range
-    try_multi_range,
-    range: 1..=3,
+    multi_range: 1..=3,
 }
 
 read_only_csr_field!(
     Mtest,
     /// multi-bit field
-    multi_field,
-    /// try-getter multi-bit field
-    try_multi_field,
-    range: [4:7],
+    multi_field: [4:7],
 );
 
 read_only_csr_field!(
     Mtest,
     /// multi-bit field
-    field_enum,
-    /// try-getter multi-bit field
-    try_field_enum,
-    /// field enum type with valid field variants
-    MtestFieldEnum {
-        range: [7:11],
-        default: Field1,
-        Field1 = 1,
-        Field2 = 2,
-        Field3 = 3,
-        Field4 = 15,
-    },
+    field_enum: {
+        /// field enum type with valid field variants
+        MtestFieldEnum {
+            range: [7:11],
+            default: Field1,
+            Field1 = 1,
+            Field2 = 2,
+            Field3 = 3,
+            Field4 = 15,
+        }
+    }
 );
 
 // we don't test the `read` function, we are only testing in-memory functions.
