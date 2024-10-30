@@ -113,6 +113,9 @@ SECTIONS
     *(.text .text.*);
   } > REGION_TEXT
 
+  .eh_frame : { KEEP(*(.eh_frame)) } > REGION_TEXT
+  .eh_frame_hdr : { *(.eh_frame_hdr) } > REGION_TEXT
+
   .rodata : ALIGN(4)
   {
     *(.srodata .srodata.*);
@@ -169,9 +172,6 @@ SECTIONS
   {
     KEEP(*(.got .got.*));
   }
-
-  .eh_frame (INFO) : { KEEP(*(.eh_frame)) }
-  .eh_frame_hdr (INFO) : { *(.eh_frame_hdr) }
 }
 
 /* Do not exceed this mark in the error messages above                                    | */

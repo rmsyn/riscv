@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Remove `INFO` section attribute from `eh_frame` + `eh_fram_hdr` in `link.x`
+
 ## [v0.13.0] - 2024-10-19
 
 ### Added
