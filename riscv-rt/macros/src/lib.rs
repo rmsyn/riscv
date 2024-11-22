@@ -643,95 +643,41 @@ pub fn exception(args: TokenStream, input: TokenStream) -> TokenStream {
 ///     loop{};
 /// }
 /// ```
-pub fn core_interrupt_rv32i(args: TokenStream, input: TokenStream) -> TokenStream {
-    let arch = match () {
-        #[cfg(feature = "v-trap")]
-        () => Some(RiscvArch::Rv32I),
-        #[cfg(not(feature = "v-trap"))]
-        () => None,
-    };
-    trap(args, input, RiscvPacItem::CoreInterrupt, arch)
-}
+pub fn core_interrupt(args: TokenStream, input: TokenStream) -> TokenStream {
+    if cfg!(all(target_arch = "riscv32", target_feature = "e")) {
+        let arch = match () {
+            #[cfg(feature = "v-trap")]
+            () => Some(RiscvArch::Rv32E),
+            #[cfg(not(feature = "v-trap"))]
+            () => None,
+        };
+        trap(args, input, RiscvPacItem::CoreInterrupt, arch)
 
-#[proc_macro_attribute]
-/// Attribute to declare a core interrupt handler.
-///
-/// The function must have the signature `[unsafe] fn() [-> !]`.
-///
-/// The argument of the macro must be a path to a variant of an enum that implements the `riscv_rt::CoreInterruptNumber` trait.
-///
-/// If the `v-trap` feature is enabled, this macro generates the corresponding interrupt trap handler in assembly.
-///
-/// # Example
-///
-/// ``` ignore,no_run
-/// #[riscv_rt::core_interrupt(riscv::interrupt::Interrupt::SupervisorSoft)]
-/// fn supervisor_soft() -> ! {
-///     loop{};
-/// }
-/// ```
-pub fn core_interrupt_rv32e(args: TokenStream, input: TokenStream) -> TokenStream {
-    let arch = match () {
-        #[cfg(feature = "v-trap")]
-        () => Some(RiscvArch::Rv32E),
-        #[cfg(not(feature = "v-trap"))]
-        () => None,
-    };
-    trap(args, input, RiscvPacItem::CoreInterrupt, arch)
-}
-
-#[proc_macro_attribute]
-/// Attribute to declare a core interrupt handler.
-///
-/// The function must have the signature `[unsafe] fn() [-> !]`.
-///
-/// The argument of the macro must be a path to a variant of an enum that implements the `riscv_rt::CoreInterruptNumber` trait.
-///
-/// If the `v-trap` feature is enabled, this macro generates the corresponding interrupt trap handler in assembly.
-///
-/// # Example
-///
-/// ``` ignore,no_run
-/// #[riscv_rt::core_interrupt(riscv::interrupt::Interrupt::SupervisorSoft)]
-/// fn supervisor_soft() -> ! {
-///     loop{};
-/// }
-/// ```
-pub fn core_interrupt_rv64i(args: TokenStream, input: TokenStream) -> TokenStream {
-    let arch = match () {
-        #[cfg(feature = "v-trap")]
-        () => Some(RiscvArch::Rv64I),
-        #[cfg(not(feature = "v-trap"))]
-        () => None,
-    };
-    trap(args, input, RiscvPacItem::CoreInterrupt, arch)
-}
-
-#[proc_macro_attribute]
-/// Attribute to declare a core interrupt handler.
-///
-/// The function must have the signature `[unsafe] fn() [-> !]`.
-///
-/// The argument of the macro must be a path to a variant of an enum that implements the `riscv_rt::CoreInterruptNumber` trait.
-///
-/// If the `v-trap` feature is enabled, this macro generates the corresponding interrupt trap handler in assembly.
-///
-/// # Example
-///
-/// ``` ignore,no_run
-/// #[riscv_rt::core_interrupt(riscv::interrupt::Interrupt::SupervisorSoft)]
-/// fn supervisor_soft() -> ! {
-///     loop{};
-/// }
-/// ```
-pub fn core_interrupt_rv64e(args: TokenStream, input: TokenStream) -> TokenStream {
-    let arch = match () {
-        #[cfg(feature = "v-trap")]
-        () => Some(RiscvArch::Rv64E),
-        #[cfg(not(feature = "v-trap"))]
-        () => None,
-    };
-    trap(args, input, RiscvPacItem::CoreInterrupt, arch)
+    } else if cfg!(all(target_arch = "riscv32", not(target_feature = "e"))) {
+        let arch = match () {
+            #[cfg(feature = "v-trap")]
+            () => Some(RiscvArch::Rv32I),
+            #[cfg(not(feature = "v-trap"))]
+            () => None,
+        };
+        trap(args, input, RiscvPacItem::CoreInterrupt, arch)
+    } else if cfg!(all(target_arch = "riscv64", target_feature = "e")) {
+        let arch = match () {
+            #[cfg(feature = "v-trap")]
+            () => Some(RiscvArch::Rv64E),
+            #[cfg(not(feature = "v-trap"))]
+            () => None,
+        };
+        trap(args, input, RiscvPacItem::CoreInterrupt, arch)
+    } else {
+        let arch = match () {
+            #[cfg(feature = "v-trap")]
+            () => Some(RiscvArch::Rv64I),
+            #[cfg(not(feature = "v-trap"))]
+            () => None,
+        };
+        trap(args, input, RiscvPacItem::CoreInterrupt, arch)
+    }
 }
 
 #[proc_macro_attribute]
