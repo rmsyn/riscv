@@ -21,6 +21,16 @@ macro_rules! instruction {
             unimplemented!();
         }
     );
+    ($(#[$attr:meta])*, $fnname:ident, $asm:expr, $($reg_mod:pat => $reg_var:ident: $reg_ty:ident $(,)?)* $($options:tt)*) => (
+        $(#[$attr])*
+        #[inline(always)]
+        pub fn $fnname($($reg_var: $reg_ty$(,)?)*) {
+            #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
+            unsafe { core::arch::asm!($asm, $($reg_mod $reg_var$(,)?)* $($options)*) };
+            #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
+            unimplemented!();
+        }
+    );
 }
 
 instruction!(
@@ -103,26 +113,15 @@ instruction!(
     /// implementations shall ignore these fields, and standard software shall zero these fields.
     , fence_i, "fence.i", options(nostack));
 
-/// `SFENCE.VMA` instruction wrapper
-///
-/// Synchronizes updates to in-memory memory-management data structures with current execution.
-/// Instruction execution causes implicit reads and writes to these data structures; however, these implicit references
-/// are ordinarily not ordered with respect to loads and stores in the instruction stream.
-/// Executing an `SFENCE.VMA` instruction guarantees that any stores in the instruction stream prior to the
-/// `SFENCE.VMA` are ordered before all implicit references subsequent to the `SFENCE.VMA`.
-#[inline(always)]
-#[cfg_attr(
-    not(any(target_arch = "riscv32", target_arch = "riscv64")),
-    allow(unused_variables)
-)]
-pub fn sfence_vma(asid: usize, addr: usize) {
-    #[cfg(any(target_arch = "riscv32", target_arch = "riscv64"))]
-    unsafe {
-        core::arch::asm!("sfence.vma {0}, {1}", in(reg) addr, in(reg) asid, options(nostack));
-    };
-    #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64")))]
-    unimplemented!();
-}
+instruction!(
+    /// `SFENCE.VMA` instruction wrapper
+    ///
+    /// Synchronizes updates to in-memory memory-management data structures with current execution.
+    /// Instruction execution causes implicit reads and writes to these data structures; however, these implicit references
+    /// are ordinarily not ordered with respect to loads and stores in the instruction stream.
+    /// Executing an `SFENCE.VMA` instruction guarantees that any stores in the instruction stream prior to the
+    /// `SFENCE.VMA` are ordered before all implicit references subsequent to the `SFENCE.VMA`.
+    , sfence_vma, "sfence.vma {0}, {1}", in(reg) => asid: usize, in(reg) => addr: usize, options(nostack));
 
 /// Blocks the program for *at least* `cycles` CPU cycles.
 ///
