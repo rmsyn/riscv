@@ -1,50 +1,44 @@
 //! mtvec register
 
-/// mtvec register
-#[derive(Clone, Copy, Debug)]
-pub struct Mtvec {
-    bits: usize,
+const MASK: usize = usize::MAX;
+const TRAP_MASK: usize = 0b11;
+
+read_write_csr! {
+    /// mtvec register
+    Mtvec: 0x305,
+    mask: MASK,
 }
 
-/// Trap mode
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub enum TrapMode {
-    Direct = 0,
-    Vectored = 1,
+csr_field_enum! {
+    /// Trap mode
+    TrapMode {
+        default: Direct,
+        Direct = 0,
+        Vectored = 1,
+    }
+}
+
+read_write_csr_field! {
+    Mtvec,
+    /// Accesses the trap-vector mode..
+    trap_mode,
+    TrapMode: [0:1],
 }
 
 impl Mtvec {
-    /// Returns the contents of the register as raw bits
-    #[inline]
-    pub fn bits(&self) -> usize {
-        self.bits
-    }
-
     /// Returns the trap-vector base-address
     #[inline]
-    pub fn address(&self) -> usize {
-        self.bits - (self.bits & 0b11)
+    pub const fn address(&self) -> usize {
+        self.bits - (self.bits & TRAP_MASK)
     }
 
-    /// Returns the trap-vector mode
+    /// Sets the trap-vector base-address.
+    ///
+    /// # Note
+    ///
+    /// The address is aligned to 4-bytes.
     #[inline]
-    pub fn trap_mode(&self) -> Option<TrapMode> {
-        let mode = self.bits & 0b11;
-        match mode {
-            0 => Some(TrapMode::Direct),
-            1 => Some(TrapMode::Vectored),
-            _ => None,
-        }
+    pub fn set_address(&mut self, address: usize) {
+        self.bits = (address & !TRAP_MASK) | (self.bits & TRAP_MASK);
     }
-}
-
-read_csr_as!(Mtvec, 0x305);
-
-write_csr!(0x305);
-
-/// Writes the CSR
-#[inline]
-pub unsafe fn write(addr: usize, mode: TrapMode) {
-    let bits = addr + mode as usize;
-    _write(bits);
 }
