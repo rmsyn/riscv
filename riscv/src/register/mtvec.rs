@@ -42,3 +42,23 @@ impl Mtvec {
         self.bits = (address & !TRAP_MASK) | (self.bits & TRAP_MASK);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mtvec() {
+        let mut m = Mtvec::from_bits(0);
+
+        (1..=usize::BITS)
+            .map(|r| (((1u128 << r) - 1) as usize))
+            .for_each(|address| {
+                m.set_address(address);
+                assert_eq!(m.address(), address & !TRAP_MASK);
+            });
+
+        test_csr_field!(m, trap_mode: TrapMode::Direct);
+        test_csr_field!(m, trap_mode: TrapMode::Vectored);
+    }
+}
